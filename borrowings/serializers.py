@@ -16,6 +16,11 @@ class BorrowingSerializer(serializers.ModelSerializer):
             "actual_return_date",
         )
 
+    def validate_book(self, book):
+        if book.inventory < 1:
+            raise serializers.ValidationError("Book is out of stock.")
+        return book
+
     def create(self, validated_data):
         with transaction.atomic():
             book = validated_data["book"]
