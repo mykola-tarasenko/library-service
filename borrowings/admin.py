@@ -5,8 +5,9 @@ from borrowings.models import Borrowing
 
 
 @admin.register(Borrowing)
-class CityAdmin(admin.ModelAdmin):
+class BorrowingAdmin(admin.ModelAdmin):
     list_display = (
+        "id",
         "book",
         "user__email",
         "borrow_date",
