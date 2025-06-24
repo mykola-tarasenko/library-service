@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from books.serializers import BookSerializer
@@ -14,6 +15,15 @@ class BorrowingSerializer(serializers.ModelSerializer):
             "expected_return_date",
             "actual_return_date",
         )
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            book = validated_data["book"]
+            book.inventory -= 1
+            book.save()
+
+            borrowing = Borrowing.objects.create(**validated_data)
+            return borrowing
 
 
 class BorrowingListSerializer(BorrowingSerializer):
