@@ -87,3 +87,19 @@ class BookAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
+
+    def test_book_partial_update(self):
+        payload = {"title": "TEST"}
+        book = Book.objects.create(
+            title=f"Test",
+            author="Test Testenko",
+            cover="SOFT",
+            inventory=2,
+            daily_fee=0.02,
+        )
+        response = self.client.patch(detail_url(book.id), payload)
+        book = Book.objects.get(pk=book.id)
+        serializer = BookSerializer(book)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
