@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 
 from books.models import Book
 from borrowings.models import Borrowing
-from borrowings.serializers import BorrowingListSerializer
+from borrowings.serializers import BorrowingListSerializer, BorrowingAdminListSerializer
 
 BORROWING_URL = reverse("borrowings:borrowing-list")
 
@@ -74,3 +74,19 @@ class BorrowingAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0], serializer.data)
+
+    def test_borrowing_list_for_admin(self):
+        Borrowing.objects.create(
+            book=self.book,
+            user=self.staff_user,
+            borrow_date=date.today(),
+            expected_return_date=date.today() + timedelta(days=5),
+        )
+        self.client.force_authenticate(self.staff_user)
+        response = self.client.get(BORROWING_URL)
+        borrowings = Borrowing.objects.all()
+        serializer = BorrowingAdminListSerializer(borrowings, many=True)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(serializer.data, response.data)
