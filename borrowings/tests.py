@@ -138,3 +138,12 @@ class BorrowingAPITest(TestCase):
         self.book.refresh_from_db()
         self.assertIsNotNone(self.borrowing.actual_return_date)
         self.assertEqual(self.book.inventory, 4)
+
+    def test_borrowing_return_twice_fails(self):
+        self.borrowing.actual_return_date = date.today()
+        self.borrowing.save()
+        self.client.force_authenticate(self.user)
+        response = self.client.post(return_url(self.borrowing.id))
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("already been returned", str(response.data))
