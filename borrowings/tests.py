@@ -103,3 +103,17 @@ class BorrowingAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.book.refresh_from_db()
         self.assertEqual(self.book.inventory, 2)
+
+    def test_borrowing_create_with_no_inventory_fails(self):
+        self.book.inventory = 0
+        self.book.save()
+        self.client.force_authenticate(self.user)
+        payload = {
+            "book": self.book.id,
+            "borrow_date": date.today(),
+            "expected_return_date": date.today() + timedelta(days=2),
+        }
+        response = self.client.post(BORROWING_URL, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Book is out of stock", str(response.data))
