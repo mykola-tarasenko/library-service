@@ -110,6 +110,20 @@ class BorrowingAPITest(TestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["id"], self.borrowing.id)
 
+    def test_borrowing_list_filter_by_user_id(self):
+        Borrowing.objects.create(
+            user=self.user,
+            book=self.book,
+            borrow_date=date.today(),
+            expected_return_date=date.today() + timedelta(days=3),
+        )
+        self.client.force_authenticate(self.staff_user)
+        response = self.client.get(BORROWING_URL + f"?user_id={self.user.id}")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("user", response.data[0])
+        self.assertEqual(response.data[0]["user"], self.user.email)
+
     def test_borrowing_create(self):
         self.client.force_authenticate(self.user)
         payload = {
