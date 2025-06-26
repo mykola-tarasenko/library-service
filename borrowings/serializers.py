@@ -45,3 +45,11 @@ class BorrowingReturnSerializer(serializers.ModelSerializer):
         model = Borrowing
         fields = ("id", "actual_return_date")
         read_only_fields = ("id", "actual_return_date")
+
+    def validate(self, attrs):
+        borrowing = self.instance
+        if borrowing.actual_return_date is not None:
+            raise serializers.ValidationError(
+                "This borrowing has already been returned."
+            )
+        return attrs
