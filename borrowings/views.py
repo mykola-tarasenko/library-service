@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -12,6 +14,14 @@ from borrowings.serializers import (
 )
 
 
+@extend_schema_view(
+    create=extend_schema(summary="Create borrowing"),
+    retrieve=extend_schema(summary="Get borrowing details"),
+    update=extend_schema(summary="Update borrowing"),
+    partial_update=extend_schema(summary="Partially update borrowing"),
+    destroy=extend_schema(summary="Delete borrowing"),
+    return_borrowing=extend_schema(summary="Return borrowing"),
+)
 class BorrowingViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -36,7 +46,10 @@ class BorrowingViewSet(
 
         is_active = self.request.query_params.get("is_active")
         if is_active is not None:
-            queryset = queryset.filter(actual_return_date__isnull=True)
+            if is_active.lower() == "true":
+                queryset = queryset.filter(actual_return_date__isnull=True)
+            elif is_active.lower() == "false":
+                queryset = queryset.filter(actual_return_date__isnull=False)
 
         user_id = self.request.query_params.get("user_id")
         if user_id and is_staff:
@@ -71,3 +84,24 @@ class BorrowingViewSet(
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        summary="List borrowings",
+        description="Returns a list of borrowings with optional filter params.",
+        parameters=[
+            OpenApiParameter(
+                name="is_active",
+                type=OpenApiTypes.STR,
+                description="Filter by status (is_active=true for not returned books, is_active=false for returned books)",
+                required=False,
+            ),
+            OpenApiParameter(
+                name="user_id",
+                type=OpenApiTypes.INT,
+                description="Filter by user_id (available only for admin users)",
+                required=False,
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
