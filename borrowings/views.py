@@ -32,6 +32,10 @@ class BorrowingViewSet(
         if self.action in ("list", "retrieve"):
             queryset = queryset.select_related("book", "user")
 
+        is_active = self.request.query_params.get("is_active")
+        if is_active is not None:
+            queryset = queryset.filter(actual_return_date__isnull=True)
+
         return queryset
 
     def get_serializer_class(self):
