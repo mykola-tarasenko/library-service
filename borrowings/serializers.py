@@ -15,6 +15,7 @@ class BorrowingSerializer(serializers.ModelSerializer):
             "expected_return_date",
             "actual_return_date",
         )
+        read_only_fields = ("id", "actual_return_date")
 
     def validate_book(self, book):
         if book.inventory < 1:
@@ -37,3 +38,10 @@ class BorrowingListSerializer(BorrowingSerializer):
 
 class BorrowingRetrieveSerializer(BorrowingSerializer):
     book = BookSerializer()
+
+
+class BorrowingReturnSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Borrowing
+        fields = ("id", "actual_return_date")
+        read_only_fields = ("id", "actual_return_date")
