@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -36,7 +37,10 @@ class BorrowingViewSet(
 
         is_active = self.request.query_params.get("is_active")
         if is_active is not None:
-            queryset = queryset.filter(actual_return_date__isnull=True)
+            if is_active.lower() == "true":
+                queryset = queryset.filter(actual_return_date__isnull=True)
+            elif is_active.lower() == "false":
+                queryset = queryset.filter(actual_return_date__isnull=False)
 
         user_id = self.request.query_params.get("user_id")
         if user_id and is_staff:
