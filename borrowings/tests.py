@@ -1,8 +1,18 @@
+from datetime import date, timedelta
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
+from rest_framework.test import APIClient
 
 from books.models import Book
 from borrowings.models import Borrowing
+
+BORROWING_URL = reverse("borrowings:borrowing-list")
+
+
+def detail_url(borrowing_id: int):
+    return reverse("borrowings:borrowing-detail", args=[borrowing_id])
 
 
 class BorrowingTest(TestCase):
@@ -28,4 +38,28 @@ class BorrowingTest(TestCase):
         self.assertEqual(
             str(borrowing),
             f'{borrowing.user} borrowed "{borrowing.book}" on {borrowing.borrow_date}',
+        )
+
+
+class BorrowingAPITest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="user@example.com", password="testpass123"
+        )
+        self.staff_user = get_user_model().objects.create_user(
+            email="admin@example.com", password="adminpass123", is_staff=True
+        )
+        self.book = Book.objects.create(
+            title="Book",
+            author="Author",
+            cover="SOFT",
+            inventory=3,
+            daily_fee=0.50,
+        )
+        self.borrowing = Borrowing.objects.create(
+            book=self.book,
+            user=self.user,
+            borrow_date=date.today(),
+            expected_return_date=date.today() + timedelta(days=3),
         )
