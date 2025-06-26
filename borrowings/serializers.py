@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db import transaction
 from rest_framework import serializers
 
@@ -53,3 +55,10 @@ class BorrowingReturnSerializer(serializers.ModelSerializer):
                 "This borrowing has already been returned."
             )
         return attrs
+
+    def update(self, instance, validated_data):
+        instance.actual_return_date = date.today()
+        instance.book.inventory += 1
+        instance.book.save()
+        instance.save()
+        return instance
