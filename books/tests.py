@@ -39,6 +39,14 @@ class BookAPITest(TestCase):
         )
         self.client.force_authenticate(self.user)
 
+        self.book = Book.objects.create(
+            title=f"Test",
+            author="Test Testenko",
+            cover="SOFT",
+            inventory=2,
+            daily_fee=0.02,
+        )
+
     def test_book_list(self):
         for i in range(5):
             Book.objects.create(
@@ -58,7 +66,7 @@ class BookAPITest(TestCase):
 
     def test_book_create(self):
         payload = {
-            "title": "Test",
+            "title": "Test1",
             "author": "Testenko",
             "cover": "SOFT",
             "inventory": 2,
@@ -75,30 +83,16 @@ class BookAPITest(TestCase):
         self.assertEqual(book.daily_fee, Decimal(payload["daily_fee"]))
 
     def test_book_retrieve(self):
-        book = Book.objects.create(
-            title=f"Test",
-            author="Test Testenko",
-            cover="SOFT",
-            inventory=2,
-            daily_fee=0.02,
-        )
-        response = self.client.get(detail_url(book.id))
-        serializer = BookSerializer(book)
+        response = self.client.get(detail_url(self.book.id))
+        serializer = BookSerializer(self.book)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
     def test_book_partial_update(self):
         payload = {"title": "TEST"}
-        book = Book.objects.create(
-            title=f"Test",
-            author="Test Testenko",
-            cover="SOFT",
-            inventory=2,
-            daily_fee=0.02,
-        )
-        response = self.client.patch(detail_url(book.id), payload)
-        book = Book.objects.get(pk=book.id)
+        response = self.client.patch(detail_url(self.book.id), payload)
+        book = Book.objects.get(pk=self.book.id)
         serializer = BookSerializer(book)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -112,30 +106,16 @@ class BookAPITest(TestCase):
             "inventory": 2,
             "daily_fee": "0.05",
         }
-        book = Book.objects.create(
-            title=f"Test",
-            author="Test Testenko",
-            cover="SOFT",
-            inventory=2,
-            daily_fee=0.02,
-        )
-        response = self.client.patch(detail_url(book.id), payload)
-        book = Book.objects.get(pk=book.id)
+        response = self.client.patch(detail_url(self.book.id), payload)
+        book = Book.objects.get(pk=self.book.id)
         serializer = BookSerializer(book)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
     def test_book_destroy(self):
-        book = Book.objects.create(
-            title=f"Test",
-            author="Test Testenko",
-            cover="SOFT",
-            inventory=2,
-            daily_fee=0.02,
-        )
-        response = self.client.delete(detail_url(book.id))
+        response = self.client.delete(detail_url(self.book.id))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        response = self.client.get(detail_url(book.id))
+        response = self.client.get(detail_url(self.book.id))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
