@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -49,3 +51,21 @@ class BookAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
+
+    def test_book_create(self):
+        payload = {
+            "title": "Test",
+            "author": "Testenko",
+            "cover": "SOFT",
+            "inventory": 2,
+            "daily_fee": "0.05",
+        }
+        response = self.client.post(BOOK_URL, payload)
+        book = Book.objects.get(id=response.data["id"])
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(book.title, payload["title"])
+        self.assertEqual(book.author, payload["author"])
+        self.assertEqual(book.cover, payload["cover"])
+        self.assertEqual(book.inventory, payload["inventory"])
+        self.assertEqual(book.daily_fee, Decimal(payload["daily_fee"]))
