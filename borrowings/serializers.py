@@ -38,6 +38,22 @@ class BorrowingListSerializer(BorrowingSerializer):
     book = serializers.CharField(source="book.title")
 
 
+class BorrowingAdminListSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source="user.email")
+    book = serializers.CharField(source="book.title")
+
+    class Meta:
+        model = Borrowing
+        fields = (
+            "id",
+            "user",
+            "book",
+            "borrow_date",
+            "expected_return_date",
+            "actual_return_date",
+        )
+
+
 class BorrowingRetrieveSerializer(BorrowingSerializer):
     book = BookSerializer()
 
