@@ -117,3 +117,10 @@ class BorrowingAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Book is out of stock", str(response.data))
+
+    def test_retrieve_borrowing(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(detail_url(self.borrowing.id))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["book"]["id"], self.book.id)
