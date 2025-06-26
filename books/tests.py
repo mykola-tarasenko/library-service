@@ -125,3 +125,17 @@ class BookAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
+
+    def test_book_destroy(self):
+        book = Book.objects.create(
+            title=f"Test",
+            author="Test Testenko",
+            cover="SOFT",
+            inventory=2,
+            daily_fee=0.02,
+        )
+        response = self.client.delete(detail_url(book.id))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        response = self.client.get(detail_url(book.id))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
