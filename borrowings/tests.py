@@ -17,6 +17,10 @@ def detail_url(borrowing_id: int):
     return reverse("borrowings:borrowing-detail", args=[borrowing_id])
 
 
+def return_url(borrowing_id: int):
+    return reverse("borrowings:borrowing-return-borrowing", args=[borrowing_id])
+
+
 class BorrowingTest(TestCase):
     def test_str_method(self):
         book = Book.objects.create(
@@ -124,3 +128,13 @@ class BorrowingAPITest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["book"]["id"], self.book.id)
+
+    def test_borrowing_return_success(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(return_url(self.borrowing.id))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.borrowing.refresh_from_db()
+        self.book.refresh_from_db()
+        self.assertIsNotNone(self.borrowing.actual_return_date)
+        self.assertEqual(self.book.inventory, 4)
