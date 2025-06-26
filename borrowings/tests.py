@@ -3,10 +3,12 @@ from datetime import date, timedelta
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework import status
 from rest_framework.test import APIClient
 
 from books.models import Book
 from borrowings.models import Borrowing
+from borrowings.serializers import BorrowingListSerializer
 
 BORROWING_URL = reverse("borrowings:borrowing-list")
 
@@ -63,3 +65,12 @@ class BorrowingAPITest(TestCase):
             borrow_date=date.today(),
             expected_return_date=date.today() + timedelta(days=3),
         )
+
+    def test_borrowing_list(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(BORROWING_URL)
+        serializer = BorrowingListSerializer(self.borrowing)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0], serializer.data)
